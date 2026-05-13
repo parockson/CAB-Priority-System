@@ -361,9 +361,11 @@ The system uses the **Status** field to route data across different views:
 * **Reconciliation**: The process of ensuring financial records are consistent, a primary focus for this system’s integrity checks.
         """
         return html.Div([
-            dbc.Card([
-                dbc.CardBody(dcc.Markdown(docs_md, mathjax=True))
-            ], className="mb-4"),
+            dbc.Row(dbc.Col([
+                dbc.Card([
+                    dbc.CardBody(dcc.Markdown(docs_md, mathjax=True, className="docs-content"))
+                ], className="mb-4 shadow-sm border-0", style={"borderTop": "4px solid #ED1944", "borderRadius": "12px", "padding": "15px"})
+            ], md=11, lg=9), className="justify-content-center"),
             hidden_save, hidden_delete
         ])
         

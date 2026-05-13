@@ -123,3 +123,87 @@ input.form-control:focus {
     background-color: var(--fintech-dark) !important;
     border: none !important;
 }
+
+/* Documentation / Info Section Styling */
+.docs-content {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    padding: 15px;
+}
+
+.docs-content h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--fintech-dark);
+    margin-bottom: 25px;
+    letter-spacing: -0.5px;
+}
+
+.docs-content h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--fintech-red);
+    margin-top: 40px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(237, 25, 68, 0.15);
+    padding-bottom: 8px;
+}
+
+.docs-content h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--fintech-dark);
+    margin-top: 30px;
+}
+
+.docs-content hr {
+    margin: 40px 0;
+    border: 0;
+    height: 1px;
+    background: linear-gradient(to right, rgba(237,25,68,0), rgba(237,25,68,0.3), rgba(237,25,68,0));
+}
+
+.docs-content ul {
+    padding-left: 20px;
+    margin-bottom: 25px;
+}
+
+.docs-content ul li {
+    margin-bottom: 8px;
+}
+
+.docs-content table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 25px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    font-size: 0.9rem;
+}
+
+.docs-content th {
+    background-color: var(--fintech-dark);
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.docs-content td {
+    padding: 12px 15px;
+    background-color: white;
+    border-bottom: 1px solid #E5E7EB;
+    color: var(--text-secondary);
+}
+
+.docs-content tr:last-child td {
+    border-bottom: none;
+}
+
+.docs-content tr:nth-child(even) td {
+    background-color: #F9FAFB;
+}
