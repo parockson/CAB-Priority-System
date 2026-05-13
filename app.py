@@ -44,6 +44,13 @@ def render_request_modal():
         ),
     ], id="modal-form", is_open=False, size="lg")
 
+def render_feedback_modal(id_prefix):
+    return dbc.Modal([
+        dbc.ModalHeader(dbc.ModalTitle(id=f"{id_prefix}-title")),
+        dbc.ModalBody(id=f"{id_prefix}-body"),
+        dbc.ModalFooter(dbc.Button("OK", id=f"{id_prefix}-close", color="secondary", className="ms-auto"))
+    ], id=f"{id_prefix}-modal", is_open=False, centered=True)
+
 # 3. Helper for Tables
 def create_editable_table(index_name, dataframe, is_admin=True):
     return dash_table.DataTable(
@@ -101,6 +108,8 @@ def dashboard_layout(role, name="User"):
         
     return dbc.Container([
         render_request_modal(),
+        render_feedback_modal("cab-feedback"),
+        render_feedback_modal("user-feedback"),
         html.Div([
             dbc.Row([
                 dbc.Col([
@@ -302,7 +311,7 @@ The system generates two coordinates—**Importance (Y-axis)** and **Technical U
 
 This score reflects the business value and risk profile of the change. It is calculated as a weighted average of five variables:
 
-$$Importance (Y) = \\frac{(F \\cdot W_f) + (C \\cdot W_c) + (B \\cdot W_b) + (R \\cdot W_r) + (S \\cdot W_s)}{\\sum W}$$
+$$Importance (Y) = \frac{(F \cdot W_f) + (C \cdot W_c) + (B \cdot W_b) + (R \cdot W_r) + (S \cdot W_s)}{\sum W}$$
 
 * **Financial Integrity ($F$):** Risk to revenue, reconciliation accuracy, or financial reporting.
 * **Service Criticality ($C$):** How essential the service is to daily operations.
@@ -314,7 +323,7 @@ $$Importance (Y) = \\frac{(F \\cdot W_f) + (C \\cdot W_c) + (B \\cdot W_b) + (R 
 
 This score measures the pressure to deploy the change immediately. It is calculated across four technical variables:
 
-$$Urgency (X) = \\frac{(P \\cdot W_p) + (L \\cdot W_l) + (H \\cdot W_h) + (I \\cdot W_i)}{\\sum W}$$
+$$Urgency (X) = \frac{(P \cdot W_p) + (L \cdot W_l) + (H \cdot W_h) + (I \cdot W_i)}{\sum W}$$
 
 * **Security Pressure ($P$):** Immediate need to patch vulnerabilities or address threats.
 * **Contractual Clock ($L$):** Deadline pressure dictated by Service Level Agreements (SLAs).
@@ -417,8 +426,11 @@ def toggle_modal(n_open, n_submit, is_open):
 
 # 8. Callback: CAB CRUD
 @app.callback(
+    Output("cab-feedback-modal", "is_open"),
+    Output("cab-feedback-title", "children"),
+    Output("cab-feedback-body", "children"),
     Output("hidden-storage", "children"),
-    [Input("submit-btn", "n_clicks"), Input("save-btn", "n_clicks"), Input("delete-btn", "n_clicks")],
+    [Input("submit-btn", "n_clicks"), Input("save-btn", "n_clicks"), Input("delete-btn", "n_clicks"), Input("cab-feedback-close", "n_clicks")],
     [State({'type': 'cab-table', 'index': ALL}, 'data'),
      State({'type': 'cab-table', 'index': ALL}, 'selected_rows'),
      State("cr-title", "value"), State("target-date", "date"),
@@ -426,7 +438,7 @@ def toggle_modal(n_open, n_submit, is_open):
     [State(f, "value") for f in ["financial_integrity", "service_criticality", "blast_radius", "regulatory_weight", "strategic_priority", "security_pressure", "contractual_clock", "system_health", "implementation_risk"]],
     prevent_initial_call=True
 )
-def handle_crud(n_add, n_save, n_del, all_tables_data, all_selected_rows, title, t_date, session_data, *f_vals):
+def handle_crud(n_add, n_save, n_del, n_close, all_tables_data, all_selected_rows, title, t_date, session_data, *f_vals):
     # Only admins can perform CRUD
     if not session_data or session_data.get('role') != 'admin':
         return dash.no_update
@@ -435,32 +447,51 @@ def handle_crud(n_add, n_save, n_del, all_tables_data, all_selected_rows, title,
     if not ctx_trig.triggered: return dash.no_update
     tid = ctx_trig.triggered[0]['prop_id'].split('.')[0]
     
-    if tid == "save-btn" and all_tables_data:
-        for table_data in all_tables_data:
-            if table_data:
-                for row in table_data:
-                    supabase.table("cab_prioritization").update({
-                        "title": row.get("title"), "status": row.get("status"), "target_date": row.get("target_date")
-                    }).eq("id", row.get("id")).execute()
+    if tid == "cab-feedback-close":
+        return False, dash.no_update, dash.no_update, dash.no_update
+        
+    try:
+        msg = ""
+        if tid == "save-btn" and all_tables_data:
+            for table_data in all_tables_data:
+                if table_data:
+                    for row in table_data:
+                        supabase.table("cab_prioritization").update({
+                            "title": row.get("title"), "status": row.get("status"), "target_date": row.get("target_date")
+                        }).eq("id", row.get("id")).execute()
+            msg = "Records successfully updated!"
     
-    elif tid == "submit-btn" and title:
-        factors = dict(zip(["financial_integrity", "service_criticality", "blast_radius", "regulatory_weight", "strategic_priority", "security_pressure", "contractual_clock", "system_health", "implementation_risk"], f_vals))
-        x, y, quad, days = calculate_coordinates(factors, t_date)
-        supabase.table("cab_prioritization").insert({"title": title, "target_date": t_date, "x_coord": x, "y_coord": y, "quadrant": quad, "days_to_deadline": days, "status": "CR-raised", **factors}).execute()
+        elif tid == "submit-btn":
+            if title and t_date:
+                factors = dict(zip(["financial_integrity", "service_criticality", "blast_radius", "regulatory_weight", "strategic_priority", "security_pressure", "contractual_clock", "system_health", "implementation_risk"], f_vals))
+                x, y, quad, days = calculate_coordinates(factors, t_date)
+                supabase.table("cab_prioritization").insert({"title": title, "target_date": t_date, "x_coord": x, "y_coord": y, "quadrant": quad, "days_to_deadline": days, "status": "CR-raised", **factors}).execute()
+                msg = "New change request submitted successfully!"
+            else:
+                return True, "Error", "Please provide a valid Title and Target Date.", dash.no_update
     
-    elif tid == "delete-btn" and all_selected_rows:
-        for table_idx, selected_rows in enumerate(all_selected_rows):
-            if selected_rows:
-                for row_idx in selected_rows:
-                    row_id = all_tables_data[table_idx][row_idx].get("id")
-                    supabase.table("cab_prioritization").delete().eq("id", row_id).execute()
+        elif tid == "delete-btn" and all_selected_rows:
+            for table_idx, selected_rows in enumerate(all_selected_rows):
+                if selected_rows:
+                    for row_idx in selected_rows:
+                        row_id = all_tables_data[table_idx][row_idx].get("id")
+                        supabase.table("cab_prioritization").delete().eq("id", row_id).execute()
+            msg = "Selected requests deleted successfully!"
 
-    return str(pd.Timestamp.now())
+        if not msg:
+            return dash.no_update
+            
+        return True, "Success", msg, str(pd.Timestamp.now())
+    except Exception as e:
+        return True, "Error", f"Failed to perform operation: {str(e)}", dash.no_update
 
 # 9. Callback: User CRUD
 @app.callback(
+    Output("user-feedback-modal", "is_open"),
+    Output("user-feedback-title", "children"),
+    Output("user-feedback-body", "children"),
     Output("hidden-user-storage", "children"),
-    [Input("add-user-btn", "n_clicks"), Input("save-users-btn", "n_clicks"), Input("delete-users-btn", "n_clicks")],
+    [Input("add-user-btn", "n_clicks"), Input("save-users-btn", "n_clicks"), Input("delete-users-btn", "n_clicks"), Input("user-feedback-close", "n_clicks")],
     [State({'type': 'user-table', 'index': ALL}, 'data'),
      State({'type': 'user-table', 'index': ALL}, 'selected_rows'),
      State("new-user-name", "value"), State("new-user-email", "value"),
@@ -468,7 +499,7 @@ def handle_crud(n_add, n_save, n_del, all_tables_data, all_selected_rows, title,
      State("session", "data")],
     prevent_initial_call=True
 )
-def handle_user_crud(n_add, n_save, n_del, all_tables_data, all_selected_rows, name, email, password, role, session_data):
+def handle_user_crud(n_add, n_save, n_del, n_close, all_tables_data, all_selected_rows, name, email, password, role, session_data):
     if not session_data or session_data.get('role') != 'admin':
         return dash.no_update
 
@@ -476,29 +507,49 @@ def handle_user_crud(n_add, n_save, n_del, all_tables_data, all_selected_rows, n
     if not ctx_trig.triggered: return dash.no_update
     tid = ctx_trig.triggered[0]['prop_id'].split('.')[0]
     
-    if tid == "save-users-btn" and all_tables_data:
-        for table_data in all_tables_data:
-            if table_data:
-                for row in table_data:
-                    supabase.table("cab_roles").update({
-                        "name": row.get("name"), "role": row.get("role"), "password": row.get("password")
-                    }).eq("email", row.get("email")).execute()
-                    
-    elif tid == "add-user-btn" and email and name and password:
-        supabase.table("cab_roles").insert({
-            "email": email, "name": name, "role": role, "password": password
-        }).execute()
+    if tid == "user-feedback-close":
+        return False, dash.no_update, dash.no_update, dash.no_update
         
-    elif tid == "delete-users-btn" and all_selected_rows:
-        for table_idx, selected_rows in enumerate(all_selected_rows):
-            if selected_rows:
-                for row_idx in selected_rows:
-                    row_email = all_tables_data[table_idx][row_idx].get("email")
-                    # Prevent deleting oneself
-                    if row_email != session_data.get('email'):
-                        supabase.table("cab_roles").delete().eq("email", row_email).execute()
-
-    return str(pd.Timestamp.now())
+    try:
+        msg = ""
+        if tid == "save-users-btn" and all_tables_data:
+            for table_data in all_tables_data:
+                if table_data:
+                    for row in table_data:
+                        supabase.table("cab_roles").update({
+                            "name": row.get("name"), "role": row.get("role"), "password": row.get("password")
+                        }).eq("email", row.get("email")).execute()
+            msg = "User updates saved successfully!"
+                    
+        elif tid == "add-user-btn":
+            if email and name and password:
+                supabase.table("cab_roles").insert({
+                    "email": email, "name": name, "role": role, "password": password
+                }).execute()
+                msg = f"User {name} added successfully!"
+            else:
+                return True, "Error", "Please fill out all fields to add a user.", dash.no_update
+        
+        elif tid == "delete-users-btn" and all_selected_rows:
+            deleted_count = 0
+            for table_idx, selected_rows in enumerate(all_selected_rows):
+                if selected_rows:
+                    for row_idx in selected_rows:
+                        row_email = all_tables_data[table_idx][row_idx].get("email")
+                        if row_email != session_data.get('email'):
+                            supabase.table("cab_roles").delete().eq("email", row_email).execute()
+                            deleted_count += 1
+            if deleted_count > 0:
+                msg = f"{deleted_count} user(s) deleted successfully!"
+            else:
+                return True, "Error", "No users were deleted (cannot delete yourself).", dash.no_update
+                
+        if not msg:
+            return dash.no_update
+            
+        return True, "Success", msg, str(pd.Timestamp.now())
+    except Exception as e:
+        return True, "Error", f"Failed to perform user operation: {str(e)}", dash.no_update
 
 if __name__ == "__main__":
     app.run(debug=True)
