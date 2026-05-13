@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --fintech-red: #ED1944;
+    --fintech-dark: #1F2937;
+    --app-bg: #f4f6f9;
+    --text-primary: #374151;
+    --text-secondary: #6B7280;
+}
+
+body {
+    background-color: var(--app-bg);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* Dashboard Header Styling */
+.dashboard-header {
+    background: linear-gradient(135deg, var(--fintech-red) 0%, #c41235 100%);
+    color: white;
+    box-shadow: 0 10px 30px -10px rgba(237, 25, 68, 0.4) !important;
+}
+
+/* Tabs Styling */
+.custom-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 2px solid #E5E7EB;
+    margin-bottom: 15px;
+    padding-bottom: 0;
+}
+
+.custom-tabs .nav-item {
+    margin-bottom: -2px; /* Pull down to overlap the container's bottom border */
+}
+
+.custom-tabs .nav-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background-color: transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 6px 6px 0 0;
+}
+
+.custom-tabs .nav-link:hover:not(.active) {
+    color: var(--fintech-red);
+    background-color: rgba(237, 25, 68, 0.04);
+    border-bottom-color: rgba(237, 25, 68, 0.2);
+}
+
+.custom-tabs .nav-link.active {
+    color: var(--fintech-red);
+    background-color: transparent;
+    border-bottom: 3px solid var(--fintech-red);
+    font-weight: 600;
+}
+
+/* DataTable Customization */
+.dash-spreadsheet-container {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+/* Inputs and Forms */
+input.form-control {
+    border-radius: 6px;
+    border: 1px solid #D1D5DB;
+    padding: 10px 15px;
+}
+
+input.form-control:focus {
+    border-color: var(--fintech-red);
+    box-shadow: 0 0 0 3px rgba(237, 25, 68, 0.2);
+}
+
+/* General Card UI */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #E5E7EB;
+    font-weight: 600;
+    color: var(--fintech-dark);
+}
+
+/* Button overrides */
+.btn-primary {
+    background-color: var(--fintech-red) !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: transform 0.1s;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.btn-danger {
+    background-color: #ef4444 !important;
+    border: none !important;
+}
+
+.btn-success {
+    background-color: #10b981 !important;
+    border: none !important;
+}
+
+.btn-dark {
+    background-color: var(--fintech-dark) !important;
+    border: none !important;
+}
