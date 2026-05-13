@@ -1,0 +1,12 @@
+# Python environment
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Environment variables (Crucial for Supabase security)
+.env
+
+# System files
+.DS_Store
+Thumbs.db
