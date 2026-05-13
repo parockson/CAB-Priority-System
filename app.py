@@ -68,6 +68,7 @@ def create_editable_table(index_name, dataframe, is_admin=True):
         dropdown={'status': {'options': [{'label': i, 'value': i} for i in STATUS_OPTIONS]}},
         style_header={'backgroundColor': '#ED1944', 'color': 'white'} if index_name == 'active' else ARCHIVE_STYLE,
         style_cell={'padding': '10px', 'textAlign': 'left'},
+        style_table={'overflowX': 'auto'},
         css=[{"selector": ".Select-menu-outer", "rule": "display: block !important"}],
         page_size=10
     )
@@ -86,7 +87,7 @@ def login_layout():
                         html.Div(id="login-error", className="text-danger text-center mt-2")
                     ])
                 ], style={"marginTop": "20vh", "padding": "20px", "borderRadius": "15px", "boxShadow": "0px 4px 20px rgba(0,0,0,0.1)"})
-            ], width=4)
+            ], xs=11, sm=8, md=6, lg=4)
         ], justify="center"),
         dbc.Button(id="logout-btn", style={"display": "none"})
     ], fluid=True, style={"height": "100vh", "backgroundColor": "#f4f6f9"})
@@ -115,14 +116,14 @@ def dashboard_layout(role, name="User"):
                 dbc.Col([
                     html.H3("CAB Priority System", style={'color': 'white', 'fontWeight': '700', 'margin': '0'}),
                     html.P("Scientific Governance & Lifecycle Management", style={'color': '#f0f0f0', 'fontSize': '0.8rem', 'margin': '0'})
-                ], width=8),
+                ], xs=12, md=7, className="mb-3 mb-md-0 text-center text-md-start"),
                 dbc.Col([
                     html.Div([
                         html.Span(f"Welcome, {name} ({role.capitalize()})", style={"color": "white", "marginRight": "15px", "alignSelf": "center", "fontSize": "0.85rem"}),
                         dbc.Button("+ New Request", id="open-modal-btn", color="light", size="sm", className="me-2", style=({"display": "block", "padding": "2px 8px", "fontSize": "0.75rem"} if is_admin else {"display": "none"})),
                         dbc.Button("Logout", id="logout-btn", color="dark", size="sm", style={"padding": "2px 8px", "fontSize": "0.75rem"})
-                    ], className="d-flex justify-content-end align-items-center h-100")
-                ], width=4)
+                    ], className="d-flex justify-content-center justify-content-md-end align-items-center h-100")
+                ], xs=12, md=5)
             ], className="align-items-center")
         ], className="mb-4 dashboard-header", style={'backgroundColor': '#ED1944', 'padding': '15px 20px', 'borderRadius': '0 0 15px 15px', 'boxShadow': '0 4px 10px rgba(237, 25, 68, 0.3)'}),
 
@@ -384,6 +385,7 @@ The system uses the **Status** field to route data across different views:
             dropdown={'role': {'options': [{'label': 'admin', 'value': 'admin'}, {'label': 'user', 'value': 'user'}]}},
             style_header={'backgroundColor': '#1F2937', 'color': 'white'},
             style_cell={'padding': '10px', 'textAlign': 'left'},
+            style_table={'overflowX': 'auto'},
             css=[{"selector": ".Select-menu-outer", "rule": "display: block !important"}],
             page_size=10
         )
@@ -394,11 +396,11 @@ The system uses the **Status** field to route data across different views:
                 dbc.CardBody([
                     html.H6("Add New User"),
                     dbc.Row([
-                        dbc.Col(dbc.Input(id="new-user-name", placeholder="Name")),
-                        dbc.Col(dbc.Input(id="new-user-email", type="email", placeholder="Email")),
-                        dbc.Col(dbc.Input(id="new-user-password", placeholder="Password")),
-                        dbc.Col(dbc.Select(id="new-user-role", options=[{"label": "User", "value": "user"}, {"label": "Admin", "value": "admin"}], value="user")),
-                        dbc.Col(dbc.Button("Add User", id="add-user-btn", color="primary", className="w-100"))
+                        dbc.Col(dbc.Input(id="new-user-name", placeholder="Name"), xs=12, md=4, className="mb-2"),
+                        dbc.Col(dbc.Input(id="new-user-email", type="email", placeholder="Email"), xs=12, md=4, className="mb-2"),
+                        dbc.Col(dbc.Input(id="new-user-password", placeholder="Password"), xs=12, md=4, className="mb-2"),
+                        dbc.Col(dbc.Select(id="new-user-role", options=[{"label": "User", "value": "user"}, {"label": "Admin", "value": "admin"}], value="user"), xs=12, md=6, className="mb-2 mb-md-0"),
+                        dbc.Col(dbc.Button("Add User", id="add-user-btn", color="primary", className="w-100"), xs=12, md=6)
                     ])
                 ])
             ], className="mb-4"),
