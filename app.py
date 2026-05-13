@@ -12,6 +12,7 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP], 
     suppress_callback_exceptions=True 
 )
+server = app.server
 
 ARCHIVE_STYLE = {'backgroundColor': '#333', 'color': 'white', 'fontWeight': 'bold'}
 STATUS_OPTIONS = ["CR-raised", "In dev", "UAT", "Sign off", "Live", "Monitoring", "Suspended"]
@@ -274,7 +275,7 @@ def render_tabs(active_tab, _, __, session_data):
         return html.Div([html.H4("Suspended Archive"), create_editable_table('suspended', susp_df, is_admin), controls, hidden_delete])
 
     elif active_tab == "tab-info":
-        docs_md = """
+        docs_md = r"""
 # CAB Priority System Documentation
 
 The **CAB Priority System** is a professional governance framework and digital tool designed to bring mathematical objectivity to the Change Advisory Board's decision-making process. By moving away from subjective assessments, the system ensures that every change request is evaluated against its true impact on financial integrity, regulatory compliance, and technical stability.
